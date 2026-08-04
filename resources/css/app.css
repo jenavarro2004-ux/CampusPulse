@@ -1,0 +1,52 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+/* Import Poppins as the primary brand font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+@source '../views';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+
+@theme {
+    /* Typography */
+    --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+
+    /* Base Colors from MD */
+    --color-background: #F8FAF8;
+    /* Updated from F8FAF9 */
+    --color-surface: #FFFFFF;
+    --color-border: #E5E7EB;
+    --color-text: #1F2937;
+    --color-muted: #6B7280;
+
+    /* CPSU Institutional Palette */
+    --color-cpsu-primary: #006B3F;
+    --color-cpsu-primary-dark: #004D2C;
+    --color-cpsu-gold: #F4C430;
+
+    /* Role-Based Color Identity */
+    --color-role-admin: #004D2C;
+    --color-role-ossa: #7C3AED;
+    --color-role-council: #2563EB;
+    --color-role-officer: #0D9488;
+    --color-role-student: #10B981;
+
+    /* Border Radius tokens */
+    --radius-btn: 12px;
+    --radius-card: 16px;
+    --radius-modal: 20px;
+    --radius-full: 999px;
+
+    /* Custom Shadows from MD */
+    --shadow-card: 0 8px 20px rgba(0, 0, 0, 0.08);
+    --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-text font-sans antialiased;
+    }
+}
