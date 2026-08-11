@@ -1,22 +1,17 @@
-import React, { useState } from 'react';
-import { Head, Link, router, usePage } from '@inertiajs/react';
-import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
+import { Head, Link, router } from '@inertiajs/react';
 import { 
     ArrowLeft, 
-    Building2, 
-    Users, 
+    Users,
     Check, 
     X, 
     AlertCircle, 
     UserCheck, 
-    Calendar,
-    Mail,
-    Plus,
     UserPlus,
     Loader2,
     ShieldAlert
 } from 'lucide-react';
-import type { PageProps } from '@/types';
+import React, { useState } from 'react';
+import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
 import { 
     index, 
     join, 
@@ -62,9 +57,6 @@ interface ShowProps {
 }
 
 export default function Show({ organization, roster, pendingApplications, membership, isOfficer }: ShowProps) {
-    const { auth } = usePage<PageProps>().props;
-    const user = auth.user;
-
     const [actionLoading, setActionLoading] = useState(false);
     const [actionUserId, setActionUserId] = useState<number | null>(null);
 
@@ -303,6 +295,7 @@ export default function Show({ organization, roster, pendingApplications, member
                                         <div className="space-y-4">
                                             {pendingApplications.map((app) => {
                                                 const isProcessing = actionUserId === app.id;
+
                                                 return (
                                                     <div key={app.id} className="p-4 border border-cpsu-border rounded-xl bg-cpsu-surface/20 space-y-3">
                                                         <div>

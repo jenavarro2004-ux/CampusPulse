@@ -9,13 +9,14 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 /**
  * @property int $id
  * @property string $name
  * @property string $email
  * @property Carbon|null $email_verified_at
  * @property string $password
+ * @property UserRole $role
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
  * @property Carbon|null $two_factor_confirmed_at
@@ -23,6 +24,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 
@@ -51,6 +53,9 @@ class User extends Authenticatable
     /**
      * Get the user's full name.
      */
+    /**
+     * @return Attribute<string, string>
+     */
     protected function name(): Attribute
     {
         return Attribute::make(
@@ -60,8 +65,10 @@ class User extends Authenticatable
 
     /**
      * The organizations that the user belongs to.
+     *
+     * @return BelongsToMany<Organization, $this>
      */
-    public function organizations(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function organizations(): BelongsToMany
     {
         return $this->belongsToMany(Organization::class)
             ->withPivot(['role', 'status'])

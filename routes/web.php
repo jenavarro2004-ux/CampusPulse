@@ -1,10 +1,9 @@
 <?php
 
-use App\Enums\UserRole;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Student\DashboardController as StudentDashboardController;
 use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\Student\DashboardController as StudentDashboardController;
 use App\Models\Organization;
 // use App\Models\Announcement;
 // use App\Models\Event;
@@ -27,8 +26,10 @@ Route::get('/', function () {
 })->name('home');
 
 // Public Organization Directory & Profiles
-Route::get('/organizations', [OrganizationController::class, 'index'])->name('organizations.index');
-Route::get('/organizations/{organization}', [OrganizationController::class, 'show'])->name('organizations.show');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/organizations', [OrganizationController::class, 'index'])->name('organizations.index');
+    Route::get('/organizations/{organization}', [OrganizationController::class, 'show'])->name('organizations.show');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -37,8 +38,7 @@ Route::get('/organizations/{organization}', [OrganizationController::class, 'sho
 */
 
 Route::middleware(['auth'])->get('/dashboard', function (Request $request) {
-    $role = $request->user()->role;
-    $roleValue = $role instanceof UserRole ? $role->value : $role;
+    $roleValue = $request->user()->getRawOriginal('role');
 
     return match ($roleValue) {
         'admin' => redirect()->route('admin.dashboard'),
@@ -58,7 +58,7 @@ Route::middleware(['auth'])->get('/dashboard', function (Request $request) {
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
-    
+
     // User Provisioning Resource
     Route::resource('users', UserController::class);
 });
@@ -109,10 +109,10 @@ Route::middleware(['auth'])->group(function () {
     // Membership Actions
     Route::post('/organizations/{organization}/join', [OrganizationController::class, 'join'])
         ->name('organizations.join');
-        
+
     Route::patch('/organizations/{organization}/users/{user}/approve', [OrganizationController::class, 'approveMember'])
         ->name('organizations.approve-member');
-        
+
     Route::patch('/organizations/{organization}/users/{user}/reject', [OrganizationController::class, 'rejectMember'])
         ->name('organizations.reject-member');
 });

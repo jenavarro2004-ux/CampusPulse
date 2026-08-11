@@ -1,7 +1,8 @@
-import React from 'react';
-import { Head } from '@inertiajs/react';
-import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
+import { Head, Link } from '@inertiajs/react';
 import { Construction, Sparkles, ArrowLeft } from 'lucide-react';
+import React from 'react';
+import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
+import { home } from '@/routes';
 import type { UserRole } from '@/types';
 
 interface PlaceholderDashboardProps {
@@ -44,13 +45,13 @@ export default function PlaceholderDashboard({ role }: PlaceholderDashboardProps
                     </p>
                 </div>
 
-                <a 
-                    href="/" 
+                <Link
+                    href={home()}
                     className="inline-flex items-center gap-2 text-sm font-semibold text-cpsu-primary hover:text-cpsu-primary-dark transition-colors"
                 >
                     <ArrowLeft className="h-4 w-4" />
                     Back to Portal Home
-                </a>
+                </Link>
             </div>
         </AuthenticatedLayout>
     );

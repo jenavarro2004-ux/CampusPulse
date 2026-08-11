@@ -7,7 +7,6 @@ use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -24,16 +23,16 @@ class OrganizationController extends Controller
 
         // Admin and OSSA can see all organizations.
         // Others can only see active ones, or pending ones they created (are president of).
-        if (! in_array($user->role->value, [UserRole::ADMIN->value, UserRole::OSSA->value])) {
+        if (! in_array($user->getRawOriginal('role'), [UserRole::ADMIN->value, UserRole::OSSA->value])) {
             $query->where(function ($q) use ($user) {
                 $q->where('status', 'active')
-                  ->orWhere(function ($sub) use ($user) {
-                      $sub->where('status', 'pending')
-                          ->whereHas('users', function ($u) use ($user) {
-                              $u->where('users.id', $user->id)
-                                ->where('organization_user.role', 'president');
-                          });
-                  });
+                    ->orWhere(function ($sub) use ($user) {
+                        $sub->where('status', 'pending')
+                            ->whereHas('users', function ($u) use ($user) {
+                                $u->where('users.id', $user->id)
+                                    ->where('organization_user.role', 'president');
+                            });
+                    });
             });
         }
 
@@ -42,7 +41,7 @@ class OrganizationController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('code', 'like', "%{$search}%");
+                    ->orWhere('code', 'like', "%{$search}%");
             });
         }
 
@@ -105,7 +104,7 @@ class OrganizationController extends Controller
     public function show(Organization $organization, Request $request): Response
     {
         $user = $request->user();
-        $isAuthorized = in_array($user->role->value, [UserRole::ADMIN->value, UserRole::OSSA->value])
+        $isAuthorized = in_array($user->getRawOriginal('role'), [UserRole::ADMIN->value, UserRole::OSSA->value])
             || $organization->status === 'active'
             || $organization->users()->where('users.id', $user->id)->exists();
 
@@ -122,8 +121,10 @@ class OrganizationController extends Controller
                     'id' => $member->id,
                     'name' => trim("{$member->first_name} {$member->last_name}"),
                     'email' => $member->email,
-                    'role' => $member->pivot->role,
-                    'joined_at' => $member->pivot->created_at ? $member->pivot->created_at->toISOString() : null,
+                    'role' => $member->getRelationValue('pivot')->getAttribute('role'),
+                    'joined_at' => $member->getRelationValue('pivot')->getAttribute('created_at')
+                        ? $member->getRelationValue('pivot')->getAttribute('created_at')->toISOString()
+                        : null,
                 ];
             });
 
@@ -134,7 +135,7 @@ class OrganizationController extends Controller
             ->value('role');
 
         $isOfficer = in_array($currentUserRoleInOrg, ['president', 'officer'])
-            || in_array($user->role->value, [UserRole::ADMIN->value, UserRole::OSSA->value]);
+            || in_array($user->getRawOriginal('role'), [UserRole::ADMIN->value, UserRole::OSSA->value]);
 
         $pendingApplications = [];
         if ($isOfficer) {
@@ -148,7 +149,9 @@ class OrganizationController extends Controller
                         'name' => trim("{$app->first_name} {$app->last_name}"),
                         'email' => $app->email,
                         'student_number' => $app->student_number,
-                        'applied_at' => $app->pivot->created_at ? $app->pivot->created_at->toISOString() : null,
+                        'applied_at' => $app->getRelationValue('pivot')->getAttribute('created_at')
+                            ? $app->getRelationValue('pivot')->getAttribute('created_at')->toISOString()
+                            : null,
                     ];
                 });
         }
@@ -157,8 +160,8 @@ class OrganizationController extends Controller
             ->where('users.id', $user->id)
             ->first();
 
-        $membershipStatus = $userMembership ? $userMembership->pivot->status : null;
-        $membershipRole = $userMembership ? $userMembership->pivot->role : null;
+        $membershipStatus = $userMembership?->getRelationValue('pivot')->getAttribute('status');
+        $membershipRole = $userMembership?->getRelationValue('pivot')->getAttribute('role');
 
         return Inertia::render('Organizations/Show', [
             'organization' => $organization,
@@ -186,7 +189,7 @@ class OrganizationController extends Controller
             ->value('role');
 
         $isAuthorized = ($currentUserRoleInOrg === 'president')
-            || in_array($user->role->value, [UserRole::ADMIN->value, UserRole::OSSA->value]);
+            || in_array($user->getRawOriginal('role'), [UserRole::ADMIN->value, UserRole::OSSA->value]);
 
         if (! $isAuthorized) {
             abort(403, 'Unauthorized to edit this organization.');
@@ -211,15 +214,15 @@ class OrganizationController extends Controller
             ->value('role');
 
         $isAuthorized = ($currentUserRoleInOrg === 'president')
-            || in_array($user->role->value, [UserRole::ADMIN->value, UserRole::OSSA->value]);
+            || in_array($user->getRawOriginal('role'), [UserRole::ADMIN->value, UserRole::OSSA->value]);
 
         if (! $isAuthorized) {
             abort(403, 'Unauthorized to update this organization.');
         }
 
         $request->validate([
-            'name' => ['required', 'string', 'min:3', 'max:255', 'unique:organizations,name,' . $organization->id],
-            'code' => ['required', 'string', 'min:3', 'max:10', 'unique:organizations,code,' . $organization->id, 'regex:/^[A-Z0-9]+$/'],
+            'name' => ['required', 'string', 'min:3', 'max:255', 'unique:organizations,name,'.$organization->id],
+            'code' => ['required', 'string', 'min:3', 'max:10', 'unique:organizations,code,'.$organization->id, 'regex:/^[A-Z0-9]+$/'],
             'description' => ['nullable', 'string', 'max:1000'],
         ], [
             'code.regex' => 'The organization code must consist of uppercase letters and numbers only.',
@@ -242,7 +245,7 @@ class OrganizationController extends Controller
     {
         $user = $request->user();
 
-        if (! in_array($user->role->value, [UserRole::ADMIN->value, UserRole::OSSA->value])) {
+        if (! in_array($user->getRawOriginal('role'), [UserRole::ADMIN->value, UserRole::OSSA->value])) {
             abort(403, 'Unauthorized to delete this organization.');
         }
 
@@ -279,16 +282,17 @@ class OrganizationController extends Controller
 
         $existing = $organization->users()->where('users.id', $user->id)->first();
         if ($existing) {
-            if ($existing->pivot->status === 'approved') {
+            if ($existing->getRelationValue('pivot')->getAttribute('status') === 'approved') {
                 return redirect()->back()->with('error', 'You are already a member of this organization.');
             }
-            if ($existing->pivot->status === 'pending') {
+            if ($existing->getRelationValue('pivot')->getAttribute('status') === 'pending') {
                 return redirect()->back()->with('error', 'Your request to join this organization is already pending.');
             }
             $organization->users()->updateExistingPivot($user->id, [
                 'status' => 'pending',
                 'role' => 'member',
             ]);
+
             return redirect()->back()->with('success', 'Your request to join has been resubmitted.');
         }
 
@@ -314,7 +318,7 @@ class OrganizationController extends Controller
             ->value('role');
 
         $isAuthorized = in_array($currentUserRoleInOrg, ['president', 'officer'])
-            || in_array($currentUser->role->value, [UserRole::ADMIN->value, UserRole::OSSA->value]);
+            || in_array($currentUser->getRawOriginal('role'), [UserRole::ADMIN->value, UserRole::OSSA->value]);
 
         if (! $isAuthorized) {
             abort(403, 'Unauthorized to approve members.');
@@ -341,7 +345,7 @@ class OrganizationController extends Controller
             ->value('role');
 
         $isAuthorized = in_array($currentUserRoleInOrg, ['president', 'officer'])
-            || in_array($currentUser->role->value, [UserRole::ADMIN->value, UserRole::OSSA->value]);
+            || in_array($currentUser->getRawOriginal('role'), [UserRole::ADMIN->value, UserRole::OSSA->value]);
 
         if (! $isAuthorized) {
             abort(403, 'Unauthorized to reject members.');

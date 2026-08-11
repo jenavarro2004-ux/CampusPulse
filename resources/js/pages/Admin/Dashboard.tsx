@@ -1,6 +1,4 @@
-import React from 'react';
-import { Head, Link } from '@inertiajs/react';
-import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
+import { Head } from '@inertiajs/react';
 import {
     Users,
     Building2,
@@ -14,6 +12,8 @@ import {
     ScanLine,
     Activity
 } from 'lucide-react';
+import React from 'react';
+import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
 import type { Organization } from '@/types';
 
 interface Stats {
@@ -103,6 +103,7 @@ export default function Dashboard({ stats, recentOrganizations }: DashboardProps
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {statCards.map((card, idx) => {
                         const Icon = card.icon;
+
                         return (
                             <div
                                 key={idx}

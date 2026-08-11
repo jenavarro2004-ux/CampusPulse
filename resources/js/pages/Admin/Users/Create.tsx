@@ -1,7 +1,7 @@
-import React from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
-import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
 import { ArrowLeft, UserPlus, Send, Loader2 } from 'lucide-react';
+import React from 'react';
+import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
 import { index as usersIndex, store as createUserStore } from '@/routes/admin/users';
 
 export default function Create() {

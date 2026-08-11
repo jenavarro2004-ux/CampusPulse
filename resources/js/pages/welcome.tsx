@@ -1,7 +1,7 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { login } from '@/routes';
-import { index as organizationsIndex, show as organizationShow } from '@/routes/organizations';
 import { Building2, FileText, QrCode, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { home, login } from '@/routes';
+import { index as organizationsIndex, show as organizationShow } from '@/routes/organizations';
 import type { PageProps, Organization } from '@/types';
 
 interface WelcomeProps extends PageProps {
@@ -21,7 +21,7 @@ export default function Welcome({ organizations = [] }: WelcomeProps) {
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex justify-between items-center">
                         <div className="flex items-center gap-3">
                             <img
-                                src="/images/cpsu-logo.png"
+                                src="/images/Cpsu-logo.png"
                                 alt="CPSU Logo"
                                 className="h-10 w-10 rounded-full object-cover shadow-sm border border-cpsu-gold/30"
                             />
@@ -32,9 +32,9 @@ export default function Welcome({ organizations = [] }: WelcomeProps) {
 
                         {/* Desktop Navigation */}
                         <nav className="hidden md:flex items-center gap-6 font-semibold text-[16px] text-muted">
-                            <Link href="#" className="hover:text-cpsu-primary transition-colors">Home</Link>
-                            <Link href="#" className="hover:text-cpsu-primary transition-colors">About</Link>
-                            <Link href="#" className="hover:text-cpsu-primary transition-colors">Announcements</Link>
+                            <Link href={home()} className="hover:text-cpsu-primary transition-colors">Home</Link>
+                            <a href="#features" className="hover:text-cpsu-primary transition-colors">About</a>
+                            <Link href={organizationsIndex.url()} className="hover:text-cpsu-primary transition-colors">Announcements</Link>
                         </nav>
                     </div>
                 </header>
@@ -74,7 +74,7 @@ export default function Welcome({ organizations = [] }: WelcomeProps) {
                     </div>
 
                     {/* Public Active Organizations Section */}
-                    <div className="py-20 bg-surface border-b border-border">
+                    <div id="organizations" className="py-20 bg-surface border-b border-border">
                         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                             <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-4">
                                 <div>
@@ -127,7 +127,7 @@ export default function Welcome({ organizations = [] }: WelcomeProps) {
                     </div>
 
                     {/* Features Section */}
-                    <div className="py-24 bg-background">
+                    <div id="features" className="py-24 bg-background">
                         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                             <div className="text-center mb-16">
                                 <h2 className="text-[32px] font-semibold text-cpsu-primary-dark tracking-tight">
@@ -174,7 +174,7 @@ export default function Welcome({ organizations = [] }: WelcomeProps) {
                 <footer className="bg-surface border-t border-border py-8 mt-auto">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
                         <div className="flex items-center gap-2 text-cpsu-primary-dark font-semibold text-[16px]">
-                            <img src="/images/cpsu-logo.png" alt="CPSU Logo" className="h-6 w-6 rounded-full object-cover" />
+                            <img src="/images/Cpsu-logo.png" alt="CPSU Logo" className="h-6 w-6 rounded-full object-cover" />
                             <span>CampusPulse</span>
                         </div>
                         <p className="text-[14px] font-normal text-muted">

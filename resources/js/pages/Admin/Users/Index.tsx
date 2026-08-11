@@ -1,9 +1,6 @@
-import React, { useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
 import {
     Search,
-    Plus,
     UserPlus,
     Users,
     Trash2,
@@ -11,8 +8,10 @@ import {
     Shield,
     Loader2
 } from 'lucide-react';
-import type { PageProps } from '@/types';
+import React, { useState } from 'react';
+import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
 import { create as createUser, edit as editUser, destroy as deleteUser, index as usersIndex } from '@/routes/admin/users';
+import type { PageProps } from '@/types';
 
 interface UserData {
     id: number;
@@ -175,6 +174,7 @@ export default function Index({ users, filters }: IndexProps) {
                                     users.data.map((u) => {
                                         const isCurrentUser = u.id === currentUser.id;
                                         const isDeleting = deletingId === u.id;
+
                                         return (
                                             <tr key={u.id} className="hover:bg-gray-50 transition-colors">
                                                 <td className="px-6 py-4">

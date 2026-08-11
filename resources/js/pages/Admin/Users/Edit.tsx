@@ -1,12 +1,12 @@
-import React from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
-import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
 import {
     ArrowLeft,
     Save,
     Loader2,
     UserCog
 } from 'lucide-react';
+import React from 'react';
+import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
 import { update as updateUser, index as usersIndex } from '@/routes/admin/users';
 
 interface UserData {

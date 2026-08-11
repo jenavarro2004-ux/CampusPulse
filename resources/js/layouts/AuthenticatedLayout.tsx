@@ -1,21 +1,21 @@
-import React, { useState, useEffect } from 'react';
 import { Link, usePage, useForm } from '@inertiajs/react';
 import {
     LayoutDashboard, Users, Calendar, LogOut, Menu, X, Bell, Shield,
     User as UserIcon, Building2, ChevronDown, Settings, Search,
-    Megaphone, QrCode, CheckCircle, MessageSquare, ClipboardList
+    Megaphone, QrCode, CheckCircle, MessageSquare
 } from 'lucide-react';
-import type { PageProps } from '@/types';
+import React, { useState, useEffect } from 'react';
+import { useCurrentUrl } from '@/hooks/use-current-url';
 import { logout } from '@/routes';
 import { dashboard as adminDashboard } from '@/routes/admin';
-import { dashboard as studentDashboard } from '@/routes/student';
-import { dashboard as ossaDashboard } from '@/routes/ossa';
+import { index as usersIndex } from '@/routes/admin/users';
 import { dashboard as councilDashboard } from '@/routes/council';
 import { dashboard as officerDashboard } from '@/routes/officer';
 import { index as organizationsIndex } from '@/routes/organizations';
-import { index as usersIndex } from '@/routes/admin/users';
+import { dashboard as ossaDashboard } from '@/routes/ossa';
 import { edit as profileEdit } from '@/routes/profile';
-import { useCurrentUrl } from '@/hooks/use-current-url';
+import { dashboard as studentDashboard } from '@/routes/student';
+import type { PageProps } from '@/types';
 
 interface AuthenticatedLayoutProps {
     children: React.ReactNode;
@@ -29,14 +29,19 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const { post } = useForm();
     const [currentTime, setCurrentTime] = useState(new Date());
+    const { isCurrentOrParentUrl } = useCurrentUrl();
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+
         return () => clearInterval(timer);
     }, []);
 
     const handleLogout = (e?: React.FormEvent) => {
-        if (e) e.preventDefault();
+        if (e) {
+e.preventDefault();
+}
+
         post(logout.url());
     };
 
@@ -64,7 +69,7 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
         items: NavItem[];
     };
 
-    const getNavGroups = (): NavGroup[] => {
+    const useNavGroups = (): NavGroup[] => {
         const getDashboardUrl = () => {
             switch (user.role) {
                 case 'admin': return adminDashboard.url();
@@ -76,7 +81,6 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
             }
         };
 
-        const { isCurrentOrParentUrl } = useCurrentUrl();
         const dashboardUrl = getDashboardUrl();
         const orgsUrl = organizationsIndex.url();
 
@@ -111,11 +115,11 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                 label: 'STUDENT PORTAL',
                 items: [
                     { title: 'Dashboard', href: dashboardUrl, icon: LayoutDashboard, active: isCurrentOrParentUrl(dashboardUrl) },
-                    { title: 'Announcements', href: '#', icon: Megaphone, active: false },
-                    { title: 'Events', href: '#', icon: Calendar, active: false },
-                    { title: 'My QR Pass', href: '#', icon: QrCode, active: false },
-                    { title: 'Attendance History', href: '#', icon: CheckCircle, active: false },
-                    { title: 'My Concerns', href: '#', icon: MessageSquare, active: false },
+                    { title: 'Announcements', href: dashboardUrl, icon: Megaphone, active: false },
+                    { title: 'Events', href: dashboardUrl, icon: Calendar, active: false },
+                    { title: 'My QR Pass', href: dashboardUrl, icon: QrCode, active: false },
+                    { title: 'Attendance History', href: dashboardUrl, icon: CheckCircle, active: false },
+                    { title: 'My Concerns', href: dashboardUrl, icon: MessageSquare, active: false },
                 ]
             });
         }
@@ -124,8 +128,8 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
             groups.push({
                 label: 'SYSTEM AUDIT & ADMIN',
                 items: [
-                    { title: 'Audit Logs', href: '#', icon: Shield, active: false },
-                    { title: 'System Settings', href: '#', icon: Settings, active: false },
+                    { title: 'Audit Logs', href: dashboardUrl, icon: Shield, active: false },
+                    { title: 'System Settings', href: dashboardUrl, icon: Settings, active: false },
                 ]
             });
         }
@@ -141,7 +145,7 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
         return groups;
     };
 
-    const navGroups = getNavGroups();
+    const navGroups = useNavGroups();
 
     const renderNavGroups = (isMobile: boolean = false) => {
         return (
@@ -178,7 +182,10 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                                         <button
                                             key={iIdx}
                                             onClick={(e) => {
-                                                if (isMobile) setSidebarOpen(false);
+                                                if (isMobile) {
+setSidebarOpen(false);
+}
+
                                                 item.onClick!(e);
                                             }}
                                             className={`${className} w-full text-left cursor-pointer`}
