@@ -1,9 +1,6 @@
-import React, { useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
 import {
     Search,
-    Filter,
     Building2,
     Users,
     Plus,
@@ -15,7 +12,8 @@ import {
     Pencil,
     Trash2
 } from 'lucide-react';
-import type { PageProps } from '@/types';
+import React, { useState } from 'react';
+import AuthenticatedLayout from '@/layouts/authenticated-layout';
 import {
     index as organizationsIndex,
     create as createOrganization,
@@ -24,6 +22,7 @@ import {
     destroy as destroyOrganization,
     updateStatus
 } from '@/routes/organizations';
+import type { PageProps } from '@/types';
 
 interface Organization {
     id: number;
@@ -96,7 +95,7 @@ export default function Index({ organizations, filters, canCreate }: IndexProps)
         }
     };
 
-    const isAdminOrOssa = ['admin', 'ossa'].includes(user.role);
+    const isAdminOrOssa = user?.role ? ['admin', 'ossa'].includes(user.role) : false;
 
     return (
         <AuthenticatedLayout>
@@ -198,6 +197,7 @@ export default function Index({ organizations, filters, canCreate }: IndexProps)
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {organizations.map((org) => {
                             const isUpdating = loadingId === org.id;
+
                             return (
                                 <div
                                     key={org.id}

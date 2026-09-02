@@ -1,21 +1,22 @@
-import React, { useState, useEffect } from 'react';
 import { Link, usePage, useForm } from '@inertiajs/react';
 import {
     LayoutDashboard, Users, Calendar, LogOut, Menu, X, Bell, Shield,
     User as UserIcon, Building2, ChevronDown, Settings, Search,
-    Megaphone, QrCode, CheckCircle, MessageSquare, ClipboardList
+    Megaphone, QrCode, CheckCircle, MessageSquare, LogIn
 } from 'lucide-react';
-import type { PageProps } from '@/types';
-import { logout } from '@/routes';
+import React, { useState, useEffect } from 'react';
+import { useCurrentUrl } from '@/hooks/use-current-url';
+import { logout, login } from '@/routes';
 import { dashboard as adminDashboard } from '@/routes/admin';
-import { dashboard as studentDashboard } from '@/routes/student';
-import { dashboard as ossaDashboard } from '@/routes/ossa';
+import { organizations as adminOrganizations } from '@/routes/admin';
+import { index as usersIndex } from '@/routes/admin/users';
 import { dashboard as councilDashboard } from '@/routes/council';
 import { dashboard as officerDashboard } from '@/routes/officer';
 import { index as organizationsIndex } from '@/routes/organizations';
-import { index as usersIndex } from '@/routes/admin/users';
+import { dashboard as ossaDashboard } from '@/routes/ossa';
 import { edit as profileEdit } from '@/routes/profile';
-import { useCurrentUrl } from '@/hooks/use-current-url';
+import { dashboard as studentDashboard } from '@/routes/student';
+import type { PageProps } from '@/types';
 
 interface AuthenticatedLayoutProps {
     children: React.ReactNode;
@@ -24,6 +25,7 @@ interface AuthenticatedLayoutProps {
 export default function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
     const { auth } = usePage<PageProps>().props;
     const user = auth.user;
+    const { isCurrentOrParentUrl } = useCurrentUrl();
 
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -32,11 +34,15 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+
         return () => clearInterval(timer);
     }, []);
 
     const handleLogout = (e?: React.FormEvent) => {
-        if (e) e.preventDefault();
+        if (e) {
+e.preventDefault();
+}
+
         post(logout.url());
     };
 
@@ -48,7 +54,7 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
         student: { label: 'General Student', badgeClass: 'bg-role-student text-white' },
     };
 
-    const currentRole = roleConfig[user.role] || { label: 'User', badgeClass: 'bg-muted text-white' };
+    const currentRole = user ? (roleConfig[user.role] || { label: 'User', badgeClass: 'bg-muted text-white' }) : { label: 'Guest Visitor', badgeClass: 'bg-muted text-white' };
 
     type NavItem = {
         title: string;
@@ -66,6 +72,10 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
 
     const getNavGroups = (): NavGroup[] => {
         const getDashboardUrl = () => {
+            if (!user) {
+return '/';
+}
+
             switch (user.role) {
                 case 'admin': return adminDashboard.url();
                 case 'student': return studentDashboard.url();
@@ -76,20 +86,21 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
             }
         };
 
-        const { isCurrentOrParentUrl } = useCurrentUrl();
         const dashboardUrl = getDashboardUrl();
-        const orgsUrl = organizationsIndex.url();
+        const orgsUrl = user?.role === 'admin'
+            ? adminOrganizations.url()
+            : organizationsIndex.url();
 
         const groups: NavGroup[] = [
             {
                 label: 'DASHBOARD',
                 items: [
-                    { title: 'Overview', href: dashboardUrl, icon: LayoutDashboard, active: isCurrentOrParentUrl(dashboardUrl) }
+                    { title: user ? 'Overview' : 'Home Portal', href: dashboardUrl, icon: LayoutDashboard, active: isCurrentOrParentUrl(dashboardUrl) }
                 ]
             }
         ];
 
-        if (user.role === 'admin') {
+        if (user?.role === 'admin') {
             const usersIndexUrl = usersIndex.url();
             groups.push({
                 label: 'USER MANAGEMENT',
@@ -106,7 +117,7 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
             ]
         });
 
-        if (user.role === 'student') {
+        if (user?.role === 'student') {
             groups.push({
                 label: 'STUDENT PORTAL',
                 items: [
@@ -120,7 +131,7 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
             });
         }
 
-        if (user.role === 'admin') {
+        if (user?.role === 'admin') {
             groups.push({
                 label: 'SYSTEM AUDIT & ADMIN',
                 items: [
@@ -130,13 +141,22 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
             });
         }
 
-        groups.push({
-            label: 'ACCOUNT',
-            items: [
-                { title: 'My Profile', href: profileEdit.url(), icon: UserIcon, active: isCurrentOrParentUrl(profileEdit.url()) },
-                { title: 'Log Out', icon: LogOut, active: false, onClick: handleLogout }
-            ]
-        });
+        if (user) {
+            groups.push({
+                label: 'ACCOUNT',
+                items: [
+                    { title: 'My Profile', href: profileEdit.url(), icon: UserIcon, active: isCurrentOrParentUrl(profileEdit.url()) },
+                    { title: 'Log Out', icon: LogOut, active: false, onClick: handleLogout }
+                ]
+            });
+        } else {
+            groups.push({
+                label: 'ACCOUNT',
+                items: [
+                    { title: 'Sign In to Portal', href: login.url(), icon: LogIn, active: false }
+                ]
+            });
+        }
 
         return groups;
     };
@@ -147,14 +167,14 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
         return (
             <div className="flex flex-col h-full">
                 <nav className="flex-1 py-6 space-y-6 overflow-y-auto scrollbar-hide">
-                    {navGroups.map((group, gIdx) => (
-                        <div key={gIdx} className="space-y-1">
+                    {navGroups.map((group) => (
+                        <div key={group.label ?? 'primary'} className="space-y-1">
                             {group.label && (
                                 <h3 className="px-6 text-[14px] font-semibold text-[#8DA69B] uppercase tracking-wider mb-2">
                                     {group.label}
                                 </h3>
                             )}
-                            {group.items.map((item, iIdx) => {
+                            {group.items.map((item) => {
                                 const Icon = item.icon;
                                 const content = (
                                     <>
@@ -176,9 +196,12 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                                 if (item.onClick) {
                                     return (
                                         <button
-                                            key={iIdx}
+                                            key={item.title}
                                             onClick={(e) => {
-                                                if (isMobile) setSidebarOpen(false);
+                                                if (isMobile) {
+setSidebarOpen(false);
+}
+
                                                 item.onClick!(e);
                                             }}
                                             className={`${className} w-full text-left cursor-pointer`}
@@ -190,7 +213,7 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
 
                                 return (
                                     <Link
-                                        key={iIdx}
+                                        key={item.title}
                                         href={item.href || '#'}
                                         className={className}
                                         onClick={() => isMobile && setSidebarOpen(false)}
@@ -279,11 +302,15 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                                 className="flex items-center gap-3 text-left focus:outline-none cursor-pointer py-1 px-2 rounded-lg hover:bg-muted/5 transition-colors"
                             >
                                 <div className="hidden md:flex flex-col items-end">
-                                    <span className="font-semibold text-[14px] text-text leading-tight">{user.first_name} {user.last_name}</span>
-                                    <span className="text-[12px] font-medium text-cpsu-primary leading-tight">{currentRole.label}</span>
+                                    <span className="font-semibold text-[14px] text-text leading-tight">
+                                        {user ? `${user.first_name} ${user.last_name}` : 'Guest Visitor'}
+                                    </span>
+                                    <span className="text-[12px] font-medium text-cpsu-primary leading-tight">
+                                        {currentRole.label}
+                                    </span>
                                 </div>
                                 <div className="h-10 w-10 rounded-full bg-cpsu-primary text-white flex items-center justify-center font-bold text-[14px] shadow-sm border border-cpsu-primary-light">
-                                    {user.first_name[0]}{user.last_name[0]}
+                                    {user ? `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}` : 'G'}
                                 </div>
                                 <ChevronDown className="h-4 w-4 text-muted" />
                             </button>
@@ -293,20 +320,33 @@ export default function AuthenticatedLayout({ children }: AuthenticatedLayoutPro
                                     <div className="fixed inset-0 z-10" onClick={() => setDropdownOpen(false)} />
                                     <div className="absolute right-0 mt-3 w-56 bg-surface border border-border rounded-card shadow-card py-2 z-20 animate-in fade-in slide-in-from-top-2 duration-200">
                                         <div className="px-4 py-3 border-b border-border mb-1">
-                                            <p className="text-[12px] text-muted font-semibold uppercase tracking-wider mb-0.5">Logged in as</p>
-                                            <p className="text-[14px] font-semibold text-text truncate">{user.email}</p>
+                                            <p className="text-[12px] text-muted font-semibold uppercase tracking-wider mb-0.5">
+                                                {user ? 'Logged in as' : 'Access Mode'}
+                                            </p>
+                                            <p className="text-[14px] font-semibold text-text truncate">
+                                                {user ? user.email : 'Public Guest View'}
+                                            </p>
                                         </div>
-                                        <Link href={profileEdit.url()} className="flex items-center gap-3 px-4 py-2.5 text-[14px] font-medium text-text hover:bg-background transition-colors">
-                                            <UserIcon className="h-4 w-4 text-muted" />
-                                            My Profile
-                                        </Link>
-                                        <button
-                                            onClick={handleLogout}
-                                            className="flex items-center gap-3 w-full text-left px-4 py-2.5 text-[14px] font-medium text-red-600 hover:bg-red-50 transition-colors cursor-pointer mt-1 border-t border-border"
-                                        >
-                                            <LogOut className="h-4 w-4" />
-                                            Log Out
-                                        </button>
+                                        {user ? (
+                                            <>
+                                                <Link href={profileEdit.url()} className="flex items-center gap-3 px-4 py-2.5 text-[14px] font-medium text-text hover:bg-background transition-colors">
+                                                    <UserIcon className="h-4 w-4 text-muted" />
+                                                    My Profile
+                                                </Link>
+                                                <button
+                                                    onClick={handleLogout}
+                                                    className="flex items-center gap-3 w-full text-left px-4 py-2.5 text-[14px] font-medium text-red-600 hover:bg-red-50 transition-colors cursor-pointer mt-1 border-t border-border"
+                                                >
+                                                    <LogOut className="h-4 w-4" />
+                                                    Log Out
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <Link href={login.url()} className="flex items-center gap-3 px-4 py-2.5 text-[14px] font-medium text-cpsu-primary hover:bg-background transition-colors">
+                                                <LogIn className="h-4 w-4" />
+                                                Sign In to Portal
+                                            </Link>
+                                        )}
                                     </div>
                                 </>
                             )}

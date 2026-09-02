@@ -1,7 +1,7 @@
-import React from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
-import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
 import { ArrowLeft, Building2, Send, Loader2 } from 'lucide-react';
+import React from 'react';
+import AuthenticatedLayout from '@/layouts/authenticated-layout';
 import { index, store } from '@/routes/organizations';
 
 export default function Create() {

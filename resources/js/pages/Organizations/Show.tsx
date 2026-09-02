@@ -1,28 +1,25 @@
-import React, { useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
 import { 
     ArrowLeft, 
-    Building2, 
     Users, 
     Check, 
     X, 
     AlertCircle, 
     UserCheck, 
-    Calendar,
-    Mail,
-    Plus,
     UserPlus,
     Loader2,
     ShieldAlert
 } from 'lucide-react';
-import type { PageProps } from '@/types';
+import React, { useState } from 'react';
+import AuthenticatedLayout from '@/layouts/authenticated-layout';
+import { login } from '@/routes';
 import { 
     index, 
     join, 
     approveMember, 
     rejectMember 
 } from '@/routes/organizations';
+import type { PageProps } from '@/types';
 
 interface Organization {
     id: number;
@@ -167,40 +164,52 @@ export default function Show({ organization, roster, pendingApplications, member
                             </span>
                         ) : (
                             <>
-                                {membership.status === 'approved' && (
-                                    <span className="inline-flex items-center gap-1.5 px-4 py-2 border border-emerald-200 rounded-lg text-sm font-semibold bg-emerald-50 text-emerald-700">
-                                        <UserCheck className="h-4 w-4" />
-                                        You are a {membership.role === 'president' ? 'President' : membership.role === 'officer' ? 'Officer' : 'Member'}
-                                    </span>
-                                )}
-
-                                {membership.status === 'pending' && (
-                                    <span className="inline-flex items-center gap-1.5 px-4 py-2 border border-amber-200 rounded-lg text-sm font-semibold bg-amber-50 text-amber-700 animate-pulse">
-                                        <AlertCircle className="h-4 w-4" />
-                                        Join Request Pending Approval
-                                    </span>
-                                )}
-
-                                {membership.status === 'rejected' && (
-                                    <button
-                                        onClick={handleJoin}
-                                        disabled={actionLoading}
-                                        className="inline-flex items-center gap-2 bg-cpsu-primary hover:bg-cpsu-primary-dark text-white px-4 py-2 rounded-lg font-semibold text-sm shadow transition-colors disabled:opacity-50 cursor-pointer"
+                                {!user ? (
+                                    <Link
+                                        href={login.url()}
+                                        className="inline-flex items-center gap-2 bg-cpsu-primary hover:bg-cpsu-primary-dark text-white px-4 py-2 rounded-lg font-semibold text-sm shadow transition-colors cursor-pointer"
                                     >
-                                        {actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
-                                        Re-apply to Join Club
-                                    </button>
-                                )}
+                                        <UserPlus className="h-4 w-4" />
+                                        Sign in to Join Club
+                                    </Link>
+                                ) : (
+                                    <>
+                                        {membership.status === 'approved' && (
+                                            <span className="inline-flex items-center gap-1.5 px-4 py-2 border border-emerald-200 rounded-lg text-sm font-semibold bg-emerald-50 text-emerald-700">
+                                                <UserCheck className="h-4 w-4" />
+                                                You are a {membership.role === 'president' ? 'President' : membership.role === 'officer' ? 'Officer' : 'Member'}
+                                            </span>
+                                        )}
 
-                                {membership.status === null && (
-                                    <button
-                                        onClick={handleJoin}
-                                        disabled={actionLoading}
-                                        className="inline-flex items-center gap-2 bg-cpsu-primary hover:bg-cpsu-primary-dark text-white px-4 py-2 rounded-lg font-semibold text-sm shadow transition-colors disabled:opacity-50 cursor-pointer"
-                                    >
-                                        {actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
-                                        Request to Join Club
-                                    </button>
+                                        {membership.status === 'pending' && (
+                                            <span className="inline-flex items-center gap-1.5 px-4 py-2 border border-amber-200 rounded-lg text-sm font-semibold bg-amber-50 text-amber-700 animate-pulse">
+                                                <AlertCircle className="h-4 w-4" />
+                                                Join Request Pending Approval
+                                            </span>
+                                        )}
+
+                                        {membership.status === 'rejected' && (
+                                            <button
+                                                onClick={handleJoin}
+                                                disabled={actionLoading}
+                                                className="inline-flex items-center gap-2 bg-cpsu-primary hover:bg-cpsu-primary-dark text-white px-4 py-2 rounded-lg font-semibold text-sm shadow transition-colors disabled:opacity-50 cursor-pointer"
+                                            >
+                                                {actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
+                                                Re-apply to Join Club
+                                            </button>
+                                        )}
+
+                                        {membership.status === null && (
+                                            <button
+                                                onClick={handleJoin}
+                                                disabled={actionLoading}
+                                                className="inline-flex items-center gap-2 bg-cpsu-primary hover:bg-cpsu-primary-dark text-white px-4 py-2 rounded-lg font-semibold text-sm shadow transition-colors disabled:opacity-50 cursor-pointer"
+                                            >
+                                                {actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
+                                                Request to Join Club
+                                            </button>
+                                        )}
+                                    </>
                                 )}
                             </>
                         )}
@@ -303,6 +312,7 @@ export default function Show({ organization, roster, pendingApplications, member
                                         <div className="space-y-4">
                                             {pendingApplications.map((app) => {
                                                 const isProcessing = actionUserId === app.id;
+
                                                 return (
                                                     <div key={app.id} className="p-4 border border-cpsu-border rounded-xl bg-cpsu-surface/20 space-y-3">
                                                         <div>

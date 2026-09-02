@@ -1,7 +1,7 @@
-@import 'tailwindcss';
-@import 'tw-animate-css';
 /* Import Poppins as the primary brand font */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -10,18 +10,56 @@
     /* Typography */
     --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
 
-    /* Base Colors from MD */
+    /* Base Colors & Tokens */
     --color-background: #F8FAF8;
-    /* Updated from F8FAF9 */
     --color-surface: #FFFFFF;
     --color-border: #E5E7EB;
     --color-text: #1F2937;
     --color-muted: #6B7280;
 
-    /* CPSU Institutional Palette */
-    --color-cpsu-primary: #006B3F;
-    --color-cpsu-primary-dark: #004D2C;
+    /* Design System Color Variables */
+    --color-primary: #00502e;
+    --color-primary-container: #006b3f;
+    --color-on-primary: #ffffff;
+    --color-on-primary-container: #91e9b1;
+    --color-primary-fixed: #9df5bd;
+    --color-surface-tint: #046d40;
+
+    --color-secondary: #296a46;
+    --color-secondary-container: #abefc1;
+    --color-on-secondary: #ffffff;
+    --color-on-secondary-container: #2e6f4a;
+    --color-secondary-fixed: #aef2c4;
+
+    --color-tertiary: #782b31;
+    --color-tertiary-container: #964247;
+    --color-on-tertiary: #ffffff;
+    --color-on-tertiary-container: #ffc9c9;
+
+    --color-surface-container-low: #f1f5ee;
+    --color-surface-container: #ebefe9;
+    --color-surface-container-high: #e5e9e3;
+    --color-surface-variant: #dfe4dd;
+    --color-surface-bright: #f6fbf4;
+
+    --color-on-surface: #181d19;
+    --color-on-surface-variant: #3f4941;
+    --color-outline: #6f7a71;
+    --color-outline-variant: '#bec9bf';
+
+    --color-error: #ba1a1a;
+    --color-error-container: #ffdad6;
+    --color-on-error: #ffffff;
+
     --color-cpsu-gold: #F4C430;
+
+    /* Legacy CampusPulse aliases used by the portal surfaces. */
+    --color-cpsu-primary: #00502e;
+    --color-cpsu-primary-dark: #003820;
+    --color-cpsu-primary-light: #006b3f;
+    --color-cpsu-surface: #f1f5ee;
+    --color-cpsu-border: #dfe4dd;
+    --color-cpsu-text: #181d19;
 
     /* Role-Based Color Identity */
     --color-role-admin: #004D2C;

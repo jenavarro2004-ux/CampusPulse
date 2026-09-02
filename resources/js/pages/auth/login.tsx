@@ -1,5 +1,5 @@
-import React from 'react';
 import { Head, useForm } from '@inertiajs/react';
+import React from 'react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
@@ -48,27 +48,10 @@ export default function Login({ status, canResetPassword }: Props) {
                 </div>
             )}
 
-            {/* Role tabs (render inside AuthSplitLayout's white card) */}
-            <div className="mb-6">
-                <div className="flex gap-2 rounded-lg p-1 bg-gray-100">
-                    {(['student', 'officer', 'admin'] as Role[]).map((r) => (
-                        <button
-                            key={r}
-                            type="button"
-                            onClick={() => setData('role', r)}
-                            className={`flex-1 text-sm py-2 rounded-md font-semibold transition ${data.role === r ? 'bg-white shadow text-[#00502e]' : 'text-[#6b7280] hover:bg-white/50'}`}
-                        >
-                            {r === 'student' && 'Student'}
-                            {r === 'officer' && 'Officer'}
-                            {r === 'admin' && 'OSSA Admin'}
-                        </button>
-                    ))}
-                </div>
-            </div>
 
             <form onSubmit={submit} className="space-y-4">
                 <div>
-                    <Label htmlFor="email" className="block text-sm font-semibold text-[#374151] mb-1">Institutional Email / ID</Label>
+                    <Label htmlFor="email" className="block text-sm font-semibold text-[#374151] mb-1">Institutional Email</Label>
                     <div className="mt-1 relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <span className="material-symbols-outlined text-gray-400">person</span>
@@ -119,7 +102,7 @@ export default function Login({ status, canResetPassword }: Props) {
                 </div>
 
                 <div>
-                    <Button type="submit" disabled={processing} className="w-full bg-[#00502e] text-white font-bold py-3 rounded-xl hover:opacity-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+                    <Button type="submit" disabled={processing} className="w-full rounded-xl bg-[#004D2C] px-4 py-4 text-[15px] font-bold text-white shadow-lg hover:bg-[#003820] hover:-translate-y-0.5 hover:shadow-xl transition-all duration-200 ease-in-out flex items-center justify-center gap-2">
                         {processing && <Spinner className="w-4 h-4" />}
                         {data.role === 'admin' ? 'Sign in as OSSA Admin' : 'Sign in'}
                         <span className="material-symbols-outlined">arrow_forward</span>
@@ -137,6 +120,6 @@ export default function Login({ status, canResetPassword }: Props) {
 }
 
 Login.layout = {
-    title: 'Welcome Back',
-    description: 'Sign in to your CampusPulse account.',
+    title: 'Access the unified campus portal.',
+    description: 'Sign in to access your personalized campus dashboard.',
 };

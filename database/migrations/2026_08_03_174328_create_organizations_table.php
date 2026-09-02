@@ -16,7 +16,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('code')->unique();
             $table->text('description')->nullable();
-            $table->string('status')->default('pending');
+            $table->string('status')->default('active');
+            $table->text('logo')->nullable(); // Changed to text to accommodate long URLs
             $table->timestamps();
         });
     }

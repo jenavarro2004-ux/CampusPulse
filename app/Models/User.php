@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 /**
  * @property int $id
  * @property string $name
@@ -20,18 +20,21 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
  * @property string|null $two_factor_recovery_codes
  * @property Carbon|null $two_factor_confirmed_at
  * @property string|null $remember_token
+ * @property UserRole|string|null $role
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Laravel\Fortify\TwoFactorAuthenticatable;
 
-#[Fillable(['name', 'first_name', 'last_name', 'student_number', 'email', 'password', 'role', 'is_active'])]
+#[Fillable(['name', 'first_name', 'last_name', 'student_number', 'email', 'password', 'role', 'is_active', 'two_factor_secret', 'two_factor_recovery_codes', 'two_factor_confirmed_at'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, TwoFactorAuthenticatable;
 
     /**
      * Get the attributes that should be cast.
@@ -50,6 +53,8 @@ class User extends Authenticatable
 
     /**
      * Get the user's full name.
+     *
+     * @return Attribute<string, never>
      */
     protected function name(): Attribute
     {
@@ -60,11 +65,21 @@ class User extends Authenticatable
 
     /**
      * The organizations that the user belongs to.
+     *
+     * @return BelongsToMany<Organization, $this>
      */
-    public function organizations(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function organizations(): BelongsToMany
     {
         return $this->belongsToMany(Organization::class)
             ->withPivot(['role', 'status'])
             ->withTimestamps();
+    }
+
+    /**
+     * Determine if the user is an admin.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === UserRole::ADMIN;
     }
 }

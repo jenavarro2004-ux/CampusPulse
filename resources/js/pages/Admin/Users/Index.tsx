@@ -1,9 +1,6 @@
-import React, { useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
 import {
     Search,
-    Plus,
     UserPlus,
     Users,
     Trash2,
@@ -11,8 +8,10 @@ import {
     Shield,
     Loader2
 } from 'lucide-react';
-import type { PageProps } from '@/types';
+import React, { useState } from 'react';
+import AuthenticatedLayout from '@/layouts/authenticated-layout';
 import { create as createUser, edit as editUser, destroy as deleteUser, index as usersIndex } from '@/routes/admin/users';
+import type { PageProps } from '@/types';
 
 interface UserData {
     id: number;
@@ -24,10 +23,16 @@ interface UserData {
     created_at: string;
 }
 
+interface PaginationLink {
+    url: string | null;
+    label: string;
+    active: boolean;
+}
+
 interface IndexProps {
     users: {
         data: UserData[];
-        links: any[];
+        links: PaginationLink[];
         current_page: number;
         last_page: number;
         total: number;
@@ -118,7 +123,9 @@ export default function Index({ users, filters }: IndexProps) {
                         <div className="relative flex-1">
                             <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                             <input
+                                id="user-search"
                                 type="text"
+                                aria-label="Search users"
                                 placeholder="Search by name, email, or student ID..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
@@ -137,11 +144,13 @@ export default function Index({ users, filters }: IndexProps) {
                         {['', 'student', 'officer', 'ossa', 'admin'].map((r) => (
                             <button
                                 key={r}
+                                type="button"
                                 onClick={() => handleRoleFilter(r)}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${role === r
+                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                                    role === r
                                         ? 'bg-cpsu-primary text-white border-cpsu-primary shadow-sm'
                                         : 'bg-white border-cpsu-border text-gray-600 hover:bg-gray-50'
-                                    }`}
+                                }`}
                             >
                                 {r === '' ? 'All Roles' : r.toUpperCase()}
                             </button>
@@ -173,8 +182,9 @@ export default function Index({ users, filters }: IndexProps) {
                                     </tr>
                                 ) : (
                                     users.data.map((u) => {
-                                        const isCurrentUser = u.id === currentUser.id;
+                                        const isCurrentUser = u.id === currentUser?.id;
                                         const isDeleting = deletingId === u.id;
+
                                         return (
                                             <tr key={u.id} className="hover:bg-gray-50 transition-colors">
                                                 <td className="px-6 py-4">
@@ -185,7 +195,11 @@ export default function Index({ users, filters }: IndexProps) {
                                                         <div>
                                                             <div className="font-semibold text-cpsu-text">
                                                                 {u.first_name} {u.last_name}
-                                                                {isCurrentUser && <span className="ml-2 text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-normal">You</span>}
+                                                                {isCurrentUser && (
+                                                                    <span className="ml-2 text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-normal">
+                                                                        You
+                                                                    </span>
+                                                                )}
                                                             </div>
                                                             <div className="text-xs text-gray-500">{u.email}</div>
                                                         </div>
@@ -205,7 +219,6 @@ export default function Index({ users, filters }: IndexProps) {
                                                 <td className="px-6 py-4 text-right">
                                                     {!isCurrentUser && (
                                                         <div className="flex items-center justify-end gap-2">
-                                                            {/* Edit Button */}
                                                             <Link
                                                                 href={editUser.url(u.id)}
                                                                 className="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-colors cursor-pointer"
@@ -214,8 +227,8 @@ export default function Index({ users, filters }: IndexProps) {
                                                                 <Pencil className="h-4 w-4" />
                                                             </Link>
 
-                                                            {/* Delete Button */}
                                                             <button
+                                                                type="button"
                                                                 onClick={() => handleDelete(u.id, `${u.first_name} ${u.last_name}`)}
                                                                 disabled={isDeleting}
                                                                 className="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300 transition-colors disabled:opacity-50 cursor-pointer"
@@ -233,9 +246,43 @@ export default function Index({ users, filters }: IndexProps) {
                             </tbody>
                         </table>
                     </div>
-                    {/* Pagination - simple representation */}
-                    <div className="bg-cpsu-surface px-6 py-3 border-t border-cpsu-border flex items-center justify-between text-xs text-gray-500">
-                        <span>Showing {users.data.length} of {users.total} users (Page {users.current_page} of {users.last_page})</span>
+
+                    {/* Pagination Bar */}
+                    <div className="bg-cpsu-surface px-6 py-3 border-t border-cpsu-border flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
+                        <span>
+                            Showing {users.data.length} of {users.total} users (Page {users.current_page} of {users.last_page})
+                        </span>
+
+                        {users.links.length > 3 && (
+                            <div className="flex items-center gap-1">
+                                {users.links.map((link, idx) => {
+                                    if (!link.url) {
+                                        return (
+                                            <span
+                                                key={idx}
+                                                className="px-2.5 py-1 rounded text-gray-400 border border-transparent"
+                                                dangerouslySetInnerHTML={{ __html: link.label }}
+                                            />
+                                        );
+                                    }
+
+                                    return (
+                                        <Link
+                                            key={idx}
+                                            href={link.url}
+                                            preserveScroll
+                                            preserveState
+                                            className={`px-2.5 py-1 rounded border transition-colors ${
+                                                link.active
+                                                    ? 'bg-cpsu-primary text-white border-cpsu-primary font-bold'
+                                                    : 'bg-white border-cpsu-border text-gray-600 hover:bg-gray-50'
+                                            }`}
+                                            dangerouslySetInnerHTML={{ __html: link.label }}
+                                        />
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

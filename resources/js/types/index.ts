@@ -10,13 +10,22 @@ export interface Organization {
     code: string;
     description: string | null;
     status: 'active' | 'inactive' | 'pending';
+    logo?: string | null;
     created_at: string;
     updated_at: string;
 }
 
 export type PageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {
     auth: {
-        user: User;
+        user: User | null; // Updated to allow null for guests on public routes
+    };
+    name?: string; // Application name
+    sidebarOpen?: boolean; // Sidebar open state
+    flash?: {
+        success?: string;
+        error?: string;
+        warning?: string;
+        info?: string;
     };
     [key: string]: unknown;
 };

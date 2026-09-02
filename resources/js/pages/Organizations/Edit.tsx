@@ -1,7 +1,7 @@
-import React from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
-import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
 import { ArrowLeft, Building2, Save, Loader2 } from 'lucide-react';
+import React from 'react';
+import AuthenticatedLayout from '@/layouts/authenticated-layout';
 import { index, update } from '@/routes/organizations';
 
 interface Organization {

@@ -64,6 +64,37 @@ class UserFactory extends Factory
     }
 
     /**
+     * Indicate that the user is OSSA staff.
+     */
+    public function ossa(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => UserRole::OSSA,
+            'student_number' => null,
+        ]);
+    }
+
+    /**
+     * Indicate that the user is student council.
+     */
+    public function council(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => UserRole::COUNCIL,
+        ]);
+    }
+
+    /**
+     * Indicate that the user is a club officer.
+     */
+    public function officer(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => UserRole::OFFICER,
+        ]);
+    }
+
+    /**
      * Indicate that the model's email address should be unverified.
      */
     public function unverified(): static
@@ -76,5 +107,12 @@ class UserFactory extends Factory
     /**
      * Indicate that the model has two-factor authentication configured.
      */
-    public function withTwoFactor(): static {}
+    public function withTwoFactor(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'two_factor_secret' => encrypt('test-secret'),
+            'two_factor_recovery_codes' => null,
+            'two_factor_confirmed_at' => now(),
+        ]);
+    }
 }

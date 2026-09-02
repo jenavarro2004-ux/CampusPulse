@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\PasswordUpdateRequest;
 use App\Http\Requests\Settings\TwoFactorAuthenticationRequest;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
+use Laravel\Fortify\Features;
 
 class SecurityController extends Controller
 {
@@ -17,9 +19,18 @@ class SecurityController extends Controller
      */
     public function edit(TwoFactorAuthenticationRequest $request): Response
     {
+        $user = $request->user();
+        $canManageTwoFactor = Features::enabled(Features::twoFactorAuthentication());
+
         $props = [
             'passwordRules' => Password::defaults()->toPasswordRulesString(),
+            'canManageTwoFactor' => $canManageTwoFactor,
         ];
+
+        if ($canManageTwoFactor) {
+            $props['twoFactorEnabled'] = $user ? $user->hasEnabledTwoFactorAuthentication() : false;
+            $props['requiresConfirmation'] = false;
+        }
 
         return Inertia::render('settings/security', $props);
     }
@@ -29,7 +40,10 @@ class SecurityController extends Controller
      */
     public function update(PasswordUpdateRequest $request): RedirectResponse
     {
-        $request->user()->update([
+        /** @var User $user */
+        $user = $request->user();
+
+        $user->update([
             'password' => $request->password,
         ]);
 

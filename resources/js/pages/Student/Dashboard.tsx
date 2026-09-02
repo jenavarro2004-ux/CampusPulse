@@ -1,10 +1,7 @@
-import React from 'react';
 import { Head, usePage } from '@inertiajs/react';
-import AuthenticatedLayout from '@/layouts/AuthenticatedLayout';
 import { 
     Calendar, 
     Megaphone, 
-    ArrowRight, 
     Clock,
     AlertTriangle,
     Info,
@@ -14,6 +11,8 @@ import {
     Download,
     Maximize2
 } from 'lucide-react';
+import React from 'react';
+import AuthenticatedLayout from '@/layouts/authenticated-layout';
 import type { PageProps } from '@/types';
 
 interface Announcement {
@@ -35,6 +34,7 @@ export default function Dashboard({ myOrganizationsCount, upcomingEventsCount, a
     const user = auth.user;
 
     const quickActions = [
+        { title: 'My Organizations', value: myOrganizationsCount, icon: Megaphone, color: 'bg-[#006B3F]/10 text-[#006B3F]' },
         { title: 'Announcements', icon: Megaphone, color: 'bg-[#006B3F]/10 text-[#006B3F]' },
         { title: 'Upcoming Events', icon: Calendar, color: 'bg-blue-50 text-blue-600' },
         { title: 'My QR Pass', icon: QrCode, color: 'bg-[#F4C430]/10 text-[#B88E14]' },
@@ -90,14 +90,17 @@ export default function Dashboard({ myOrganizationsCount, upcomingEventsCount, a
 
                 {/* Quick Action Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {quickActions.map((action, idx) => {
+                    {quickActions.map((action) => {
                         const Icon = action.icon;
+
                         return (
-                            <button key={idx} className="bg-[#FFFFFF] p-5 rounded-[16px] border border-[#E5E7EB] shadow-sm hover:shadow-md transition-all flex flex-col items-center justify-center gap-3 group cursor-pointer">
+                            <button key={action.title} className="bg-[#FFFFFF] p-5 rounded-[16px] border border-[#E5E7EB] shadow-sm hover:shadow-md transition-all flex flex-col items-center justify-center gap-3 group cursor-pointer">
                                 <div className={`p-3 rounded-xl ${action.color} group-hover:scale-110 transition-transform`}>
                                     <Icon className="h-6 w-6" />
                                 </div>
-                                <span className="font-bold text-[#1F2937] text-sm">{action.title}</span>
+                                <span className="font-bold text-[#1F2937] text-sm">
+                                    {'value' in action ? `${action.value} ${action.title}` : action.title}
+                                </span>
                             </button>
                         );
                     })}

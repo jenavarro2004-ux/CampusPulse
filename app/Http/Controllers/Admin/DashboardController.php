@@ -21,7 +21,7 @@ class DashboardController extends Controller
 
         $recentOrganizations = Organization::latest()->limit(5)->get();
 
-        return Inertia::render('Admin/Dashboard', [
+        return Inertia::render('admin/dashboard', [
             'stats' => [
                 'totalStudents' => $totalStudents,
                 'totalOrganizations' => $totalOrganizations,

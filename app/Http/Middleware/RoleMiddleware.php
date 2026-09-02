@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Enums\UserRole;
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,14 +19,14 @@ class RoleMiddleware
     {
         $user = $request->user();
 
-        if (! $user) {
+        if (! $user instanceof User) {
             return redirect()->route('login');
         }
 
-        $userRole = $user->role;
-        $roleValue = $userRole instanceof UserRole ? $userRole->value : $userRole;
+        $userRole = $user->getAttribute('role');
+        $roleValue = $userRole instanceof UserRole ? $userRole->value : (is_string($userRole) ? $userRole : null);
 
-        if (in_array($roleValue, $roles)) {
+        if ($roleValue !== null && in_array($roleValue, $roles)) {
             return $next($request);
         }
 

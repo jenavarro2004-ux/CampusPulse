@@ -1,13 +1,12 @@
 <?php
 
-use App\Enums\UserRole;
 use App\Models\Organization;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
 
-test('guests are redirected to the login page when visiting organizations', function () {
+test('guests can view public organizations directory while create page requires auth', function () {
     $this->get(route('organizations.index'))
-        ->assertRedirect(route('login'));
+        ->assertOk();
 
     $this->get(route('organizations.create'))
         ->assertRedirect(route('login'));
@@ -15,21 +14,21 @@ test('guests are redirected to the login page when visiting organizations', func
 
 test('students can only see active organizations and their own pending organizations', function () {
     $student = User::factory()->student()->create();
-    
+
     // Create an active organization
     $activeOrg = Organization::factory()->create([
         'status' => 'active',
         'name' => 'Active Club',
         'created_at' => now()->subMinutes(10),
     ]);
-    
+
     // Create a pending organization belonging to another user
     $otherPendingOrg = Organization::factory()->create([
         'status' => 'pending',
         'name' => 'Other Pending Club',
         'created_at' => now()->subMinutes(5),
     ]);
-    
+
     // Create a pending organization belonging to the student
     $myPendingOrg = Organization::factory()->create([
         'status' => 'pending',
@@ -42,7 +41,7 @@ test('students can only see active organizations and their own pending organizat
         ->get(route('organizations.index'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Organizations/Index')
+            ->component('organizations/index')
             ->has('organizations', 2)
             ->where('organizations.0.name', 'My Pending Club')
             ->where('organizations.1.name', 'Active Club')
@@ -51,7 +50,7 @@ test('students can only see active organizations and their own pending organizat
 
 test('admin and ossa can see all organizations regardless of status', function () {
     $admin = User::factory()->admin()->create();
-    
+
     Organization::factory()->create(['status' => 'active']);
     Organization::factory()->create(['status' => 'pending']);
     Organization::factory()->create(['status' => 'inactive']);
@@ -60,7 +59,7 @@ test('admin and ossa can see all organizations regardless of status', function (
         ->get(route('organizations.index'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Organizations/Index')
+            ->component('organizations/index')
             ->has('organizations', 3)
         );
 });
@@ -105,7 +104,7 @@ test('only admin and ossa can update organization status', function () {
     $this->actingAs($admin)
         ->patch(route('organizations.update-status', $org->id), ['status' => 'active'])
         ->assertRedirect();
-        
+
     $this->assertEquals('active', $org->refresh()->status);
 });
 
@@ -129,10 +128,10 @@ test('officers can approve and reject join requests', function () {
     $president = User::factory()->student()->create();
     $applicant = User::factory()->student()->create();
     $org = Organization::factory()->create(['status' => 'active']);
-    
+
     // Attach president
     $org->users()->attach($president->id, ['role' => 'president', 'status' => 'approved']);
-    
+
     // Attach applicant
     $org->users()->attach($applicant->id, ['role' => 'member', 'status' => 'pending']);
 

@@ -13,7 +13,7 @@ class DashboardController extends Controller
      */
     public function index(): Response
     {
-        return Inertia::render('Student/Dashboard', [
+        return Inertia::render('student/dashboard', [
             'myOrganizationsCount' => 1,
             'upcomingEventsCount' => 0,
             'announcements' => [
