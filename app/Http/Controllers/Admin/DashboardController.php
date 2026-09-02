@@ -19,7 +19,22 @@ class DashboardController extends Controller
         $totalStudents = User::where('role', UserRole::STUDENT->value)->count();
         $totalOrganizations = Organization::count();
 
-        $recentOrganizations = Organization::latest()->limit(5)->get();
+        $organizationStatuses = Organization::query()
+            ->select('status')
+            ->selectRaw('COUNT(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status');
+
+        $recentOrganizations = Organization::query()
+            ->latest()
+            ->limit(5)
+            ->get([
+                'id',
+                'name',
+                'code',
+                'status',
+                'created_at',
+            ]);
 
         return Inertia::render('admin/dashboard', [
             'stats' => [
@@ -28,6 +43,7 @@ class DashboardController extends Controller
                 'pendingProposals' => 0,
                 'upcomingEvents' => 0,
             ],
+            'organizationStatuses' => $organizationStatuses,
             'recentOrganizations' => $recentOrganizations,
         ]);
     }
