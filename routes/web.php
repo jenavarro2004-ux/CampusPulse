@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Officer\DashboardController as OfficerDashboardController;
 use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\Ossa\DashboardController as OssaDashboardController;
 use App\Http\Controllers\Student\DashboardController as StudentDashboardController;
 use App\Models\Organization;
 use App\Models\User;
@@ -122,9 +123,9 @@ Route::middleware(['auth', 'role:student'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'role:ossa'])->get('/ossa/dashboard', function () {
-    return Inertia::render('placeholder-dashboard', ['role' => 'ossa']);
-})->name('ossa.dashboard');
+Route::middleware(['auth', 'role:ossa'])
+    ->get('/ossa/dashboard', [OssaDashboardController::class, 'index'])
+    ->name('ossa.dashboard');
 
 Route::middleware(['auth', 'role:council'])->get('/council/dashboard', function () {
     return Inertia::render('placeholder-dashboard', ['role' => 'council']);

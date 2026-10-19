@@ -1,27 +1,35 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import {
     FileCheck,
     Building2,
-    CalendarCheck,
-    ShieldCheck,
     ArrowUpRight,
     Clock,
-    CheckCircle
 } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
+import { show as showOrganization } from '@/routes/organizations';
 
-export default function OssaDashboard() {
+interface PendingOrganization {
+    id: number;
+    name: string;
+    code: string;
+    description: string | null;
+    created_at: string;
+}
+
+interface OssaDashboardProps {
+    pendingOrganizations: PendingOrganization[];
+    pendingOrganizationsCount: number;
+    activeOrganizationsCount: number;
+}
+
+export default function OssaDashboard({
+    pendingOrganizations,
+    pendingOrganizationsCount,
+    activeOrganizationsCount,
+}: OssaDashboardProps) {
     const stats = [
-        { label: 'Pending Endorsements', value: '4', icon: FileCheck, color: 'text-amber-600 bg-amber-50 border-amber-200' },
-        { label: 'Active Organizations', value: '10', icon: Building2, color: 'text-emerald-600 bg-emerald-50 border-emerald-200' },
-        { label: 'Event Permits Due', value: '6', icon: CalendarCheck, color: 'text-blue-600 bg-blue-50 border-blue-200' },
-        { label: 'Compliance Rate', value: '98%', icon: ShieldCheck, color: 'text-purple-600 bg-purple-50 border-purple-200' },
-    ];
-
-    const pendingProposals = [
-        { id: 1, name: 'Philippine Organization of Students (POS)', code: 'POS', type: 'Accreditation Renewal', submitted: '2 hours ago' },
-        { id: 2, name: 'Society of Computer Science (SCS)', code: 'SCS', type: 'Event Proposal: Hackathon', submitted: 'Yesterday' },
-        { id: 3, name: 'College of Agriculture Guild (CAG)', code: 'CAG', type: 'Budget Approval', submitted: '3 days ago' },
+        { label: 'Pending Organizations', value: pendingOrganizationsCount, icon: FileCheck, color: 'text-amber-600 bg-amber-50 border-amber-200' },
+        { label: 'Active Organizations', value: activeOrganizationsCount, icon: Building2, color: 'text-emerald-600 bg-emerald-50 border-emerald-200' },
     ];
 
     return (
@@ -33,16 +41,13 @@ export default function OssaDashboard() {
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight">Office of Student Services & Affairs (OSSA)</h1>
                         <p className="text-emerald-100 text-xs mt-1">
-                            Central platform for endorsing organization proposals, event permits, and accreditation management.
+                            Review pending organization submissions and monitor active organizations.
                         </p>
                     </div>
-                    <button className="px-4 py-2 bg-amber-400 hover:bg-amber-500 text-emerald-950 font-semibold rounded-lg text-xs transition-colors flex items-center gap-1.5 self-start sm:self-auto shadow-xs">
-                        Review Endorsements <ArrowUpRight className="w-4 h-4" />
-                    </button>
                 </div>
 
-                {/* Executive Metric Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Organization Summary Cards */}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     {stats.map((s) => {
                         const Icon = s.icon;
 
@@ -60,40 +65,51 @@ export default function OssaDashboard() {
                     })}
                 </div>
 
-                {/* Priority Queue Card */}
+                {/* Pending Organization Queue */}
                 <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-xs">
                     <div className="p-5 border-b border-gray-100 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <Clock className="w-4 h-4 text-amber-500" />
-                            <h2 className="text-sm font-bold text-gray-800">Pending Endorsement Requests</h2>
+                            <h2 className="text-sm font-bold text-gray-800">Pending Organizations</h2>
                         </div>
-                        <span className="text-xs text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full font-semibold border border-amber-200">
-                            Action Required
+                        <span className="text-xs text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full font-semibold border border-amber-200" aria-live="polite">
+                            {pendingOrganizationsCount} pending
                         </span>
                     </div>
 
                     <div className="divide-y divide-gray-100">
-                        {pendingProposals.map((item) => (
-                            <div key={item.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-gray-50 transition-colors">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center font-bold text-xs text-emerald-800 shrink-0">
-                                        {item.code}
+                        {pendingOrganizations.length === 0 ? (
+                            <p className="p-6 text-center text-sm text-gray-500">
+                                There are no pending organization submissions.
+                            </p>
+                        ) : (
+                            pendingOrganizations.map((organization) => (
+                                <div key={organization.id} className="flex flex-col gap-4 p-4 transition-colors hover:bg-gray-50 sm:flex-row sm:items-center sm:justify-between">
+                                    <div className="flex min-w-0 items-start gap-3">
+                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-emerald-100 bg-emerald-50 text-xs font-bold text-emerald-800">
+                                            {organization.code}
+                                        </div>
+                                        <div className="min-w-0">
+                                            <h3 className="text-xs font-bold text-gray-900">{organization.name}</h3>
+                                            <p className="text-[11px] text-gray-500">
+                                                Submitted {new Intl.DateTimeFormat('en', { dateStyle: 'medium' }).format(new Date(organization.created_at))}
+                                            </p>
+                                            {organization.description && (
+                                                <p className="mt-2 text-sm leading-relaxed text-gray-600">
+                                                    {organization.description}
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div>
-                                        <div className="text-xs font-bold text-gray-900">{item.name}</div>
-                                        <div className="text-[11px] text-gray-500">{item.type} • Submitted {item.submitted}</div>
-                                    </div>
+                                    <Link
+                                        href={showOrganization.url(organization.id)}
+                                        className="inline-flex shrink-0 items-center justify-center gap-1.5 self-start rounded-lg px-3 py-1.5 text-xs font-semibold text-emerald-800 transition-colors hover:bg-emerald-50 sm:self-center"
+                                    >
+                                        View Details <ArrowUpRight className="h-4 w-4" />
+                                    </Link>
                                 </div>
-                                <div className="flex items-center gap-2 self-end sm:self-auto">
-                                    <button className="px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                                        View Details
-                                    </button>
-                                    <button className="px-3 py-1.5 text-xs font-semibold text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg transition-colors flex items-center gap-1">
-                                        <CheckCircle className="w-3.5 h-3.5" /> Endorse
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
+                            ))
+                        )}
                     </div>
                 </div>
             </div>
